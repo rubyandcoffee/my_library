@@ -1,0 +1,6 @@
+@import "tailwindcss";
+
+/* Global cursor styles for clickable elements */
+a, button, [type="button"], [type="submit"], [type="reset"], label[for], select {
+  cursor: pointer;
+}

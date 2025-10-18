@@ -1,0 +1,287 @@
+<%= form_with(model: book, class: "space-y-6") do |form| %>
+  <% if book.errors.any? %>
+    <div class="rounded-lg bg-red-50 border border-red-200 p-4">
+      <h2 class="text-sm font-semibold text-red-800 mb-2"><%= pluralize(book.errors.count, "error") %> prohibited this book from being saved:</h2>
+      <ul class="list-disc list-inside text-sm text-red-700">
+        <% book.errors.each do |error| %>
+          <li><%= error.full_message %></li>
+        <% end %>
+      </ul>
+    </div>
+  <% end %>
+
+  <div>
+    <%= form.label :title, class: "block text-sm font-medium text-neutral-700 mb-2" %>
+    <%= form.text_field :title, id: "book_title", class: "w-full px-4 py-2 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none transition", placeholder: "Enter book title" %>
+  </div>
+
+  <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+    <div>
+      <div class="flex items-center justify-between mb-2">
+        <%= form.label :author_id, "Author", class: "block text-sm font-medium text-neutral-700" %>
+        <button type="button" id="add-new-author-btn" class="text-xs px-3 py-1 bg-purple-50 text-purple-600 font-medium rounded hover:bg-purple-100 transition">
+          + New Author
+        </button>
+      </div>
+      <%= form.collection_select :author_id, authors, :id, :name, { prompt: "Select an author" }, { id: "book_author_id", class: "w-full px-4 py-2 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none transition" } %>
+    </div>
+
+    <div>
+      <div class="flex items-center justify-between mb-2">
+        <%= form.label :series_id, "Series (optional)", class: "block text-sm font-medium text-neutral-700" %>
+        <button type="button" id="add-new-series-btn" class="text-xs px-3 py-1 bg-pink-50 text-pink-700 font-medium rounded hover:bg-pink-100 transition">
+          + New Series
+        </button>
+      </div>
+      <select name="book[series_id]" id="book_series_id" class="w-full px-4 py-2 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none transition">
+        <option value="">None</option>
+        <% series_list.each do |series| %>
+          <option value="<%= series.id %>" data-author-id="<%= series.author_id %>" <%= 'selected' if book.series_id == series.id %>>
+            <%= series.name %>
+          </option>
+        <% end %>
+      </select>
+    </div>
+  </div>
+
+  <!-- Page Count Section -->
+  <div class="flex gap-4 items-end">
+    <div class="w-48">
+      <%= form.label :page_count, "Page Count", class: "block text-sm font-medium text-neutral-700 mb-2" %>
+      <%= form.number_field :page_count, id: "book_page_count", class: "w-full px-4 py-2 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none transition", placeholder: "Number of pages", min: 1 %>
+    </div>
+    <div class="flex-1 flex justify-end h-[42px]">
+      <button type="button" id="fetch-book-data" class="text-xs px-3 py-1 bg-blue-50 text-blue-600 font-medium rounded hover:bg-blue-100 transition" style="margin-top: 27px;">
+        📚 Enter a title and author, then click here to auto-fill the page number
+      </button>
+    </div>
+  </div>
+
+  <!-- Loading indicator -->
+  <div id="fetch-status" class="hidden">
+    <div class="rounded-lg bg-blue-50 border border-blue-200 px-3 py-2">
+      <p class="text-sm text-blue-800"></p>
+    </div>
+  </div>
+
+  <!-- Book Selection Modal -->
+  <div id="book-selection-modal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+    <div class="bg-white rounded-xl shadow-2xl max-w-2xl w-full max-h-[80vh] overflow-hidden">
+      <div class="bg-gradient-to-r from-blue-500 to-blue-600 px-6 py-4">
+        <h3 class="text-xl font-semibold text-black">Select Book Edition</h3>
+        <p class="text-sm text-blue-100 mt-1">Choose the correct edition from Google Books</p>
+      </div>
+
+      <div id="book-options-list" class="overflow-y-auto max-h-96 p-4 space-y-3">
+        <!-- Book options will be inserted here -->
+      </div>
+
+      <div class="border-t border-neutral-200 px-6 py-4 bg-neutral-50 flex justify-end">
+        <button type="button" id="cancel-book-selection" class="px-6 py-2 bg-neutral-200 text-neutral-700 font-medium rounded-lg hover:bg-neutral-300 transition">
+          Cancel
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+    <div>
+      <%= form.label :status, class: "block text-sm font-medium text-neutral-700 mb-2" %>
+      <%= form.select :status, Book.statuses.keys.map { |s| [s.titleize, s] }, { prompt: "Select status" }, { class: "w-full px-4 py-2 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none transition" } %>
+    </div>
+
+    <div>
+      <%= form.label :ownership, class: "block text-sm font-medium text-neutral-700 mb-2" %>
+      <%= form.select :ownership, Book.ownerships.keys.map { |o| [o.titleize, o] }, { prompt: "Select ownership" }, { class: "w-full px-4 py-2 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none transition" } %>
+    </div>
+
+    <div>
+      <%= form.label :rating, "Rating (1-5)", class: "block text-sm font-medium text-neutral-700 mb-2" %>
+      <%= form.select :rating, (1..5).map { |r| [("⭐" * r), r] }, { prompt: "Select rating" }, { class: "w-full px-4 py-2 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none transition" } %>
+    </div>
+  </div>
+
+  <div>
+    <div class="flex items-center justify-between mb-3">
+      <%= form.label :genre_ids, "Genres", class: "block text-sm font-medium text-neutral-700" %>
+      <button type="button" id="add-new-genre-btn" class="text-xs px-3 py-1 bg-blue-50 text-blue-600 font-medium rounded hover:bg-blue-100 transition">
+        + New Genre
+      </button>
+    </div>
+    <div id="genre-checkboxes" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2">
+      <% genres.each do |genre| %>
+        <label class="flex items-center gap-2 px-3 py-2 bg-neutral-50 border border-neutral-200 rounded-lg cursor-pointer hover:bg-purple-50 hover:border-purple-300 transition">
+          <%= form.check_box :genre_ids, { multiple: true, class: "rounded border-neutral-300 text-purple-600 focus:ring-purple-500" }, genre.id, nil %>
+          <span class="text-sm text-neutral-700"><%= genre.name %></span>
+        </label>
+      <% end %>
+    </div>
+  </div>
+
+  <!-- Reading Goal Fields -->
+  <div class="bg-amber-50 border border-amber-200 rounded-lg p-4">
+    <h3 class="font-semibold text-amber-900 mb-3 flex items-center gap-2">
+      <span>📅</span>
+      <span>Reading Goal (Optional)</span>
+    </h3>
+    <p class="text-sm text-amber-700 mb-4">Set a target month and year to read this book</p>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div>
+        <%= form.label :goal_month, "Target Month", class: "block text-sm font-medium text-neutral-700 mb-2" %>
+        <%= form.select :goal_month,
+          options_for_select(
+            [["Not set", ""]] + Date::MONTHNAMES[1..12].map.with_index(1) { |name, i| [name, i] },
+            book.goal_month
+          ),
+          {},
+          { class: "w-full px-4 py-2 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-transparent outline-none transition" } %>
+      </div>
+
+      <div>
+        <%= form.label :goal_year, "Target Year", class: "block text-sm font-medium text-neutral-700 mb-2" %>
+        <%= form.number_field :goal_year, class: "w-full px-4 py-2 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-transparent outline-none transition", placeholder: Date.today.year, min: 2020, max: 2050 %>
+      </div>
+    </div>
+  </div>
+
+  <div class="flex gap-3 pt-4">
+    <%= form.submit class: "px-6 py-2 bg-gradient-to-r from-purple-500 to-pink-500 text-white font-medium rounded-lg hover:from-purple-600 hover:to-pink-600 transition cursor-pointer" %>
+    <%= link_to "Cancel", books_path, class: "px-6 py-2 bg-neutral-200 text-neutral-700 font-medium rounded-lg hover:bg-neutral-300 transition" %>
+  </div>
+<% end %>
+
+<!-- Add New Author Modal -->
+<div id="new-author-modal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+  <div class="bg-white rounded-xl shadow-2xl max-w-md w-full">
+    <div class="bg-gradient-to-r from-purple-500 to-purple-600 px-6 py-4">
+      <h3 class="text-xl font-semibold text-white">Add New Author</h3>
+    </div>
+
+    <form id="new-author-form" class="p-6 space-y-4">
+      <div>
+        <label class="block text-sm font-medium text-neutral-700 mb-2">Name *</label>
+        <input type="text" id="author_name" required class="w-full px-4 py-2 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none transition" placeholder="Author name">
+      </div>
+
+      <div>
+        <label class="block text-sm font-medium text-neutral-700 mb-2">Nationality</label>
+        <input type="text" id="author_nationality" list="nationalities" class="w-full px-4 py-2 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none transition" placeholder="Type or select nationality">
+        <datalist id="nationalities">
+          <option value="American">
+          <option value="Argentinian">
+          <option value="British">
+          <option value="Canadian">
+          <option value="Australian">
+          <option value="Irish">
+          <option value="French">
+          <option value="German">
+          <option value="Italian">
+          <option value="Spanish">
+          <option value="Japanese">
+          <option value="Chinese">
+          <option value="Indian">
+          <option value="Mexican">
+          <option value="Brazilian">
+          <option value="Russian">
+        </datalist>
+      </div>
+
+      <div>
+        <label class="block text-sm font-medium text-neutral-700 mb-2">Gender</label>
+        <select id="author_gender" class="w-full px-4 py-2 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none transition">
+          <option value="">Select gender</option>
+          <option value="male">Male</option>
+          <option value="female">Female</option>
+        </select>
+      </div>
+
+      <div id="author-modal-status" class="hidden">
+        <div class="rounded-lg p-3">
+          <p class="text-sm"></p>
+        </div>
+      </div>
+
+      <div class="flex gap-3 pt-4">
+        <button type="submit" class="flex-1 px-6 py-2 bg-gradient-to-r from-purple-500 to-purple-600 text-white font-medium rounded-lg hover:from-purple-600 hover:to-purple-700 transition">
+          Create Author
+        </button>
+        <button type="button" id="cancel-author-modal" class="px-6 py-2 bg-neutral-200 text-neutral-700 font-medium rounded-lg hover:bg-neutral-300 transition">
+          Cancel
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Add New Series Modal -->
+<div id="new-series-modal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+  <div class="bg-white rounded-xl shadow-2xl max-w-md w-full">
+    <div class="bg-gradient-to-r from-pink-500 to-pink-600 px-6 py-4">
+      <h3 class="text-xl font-semibold text-white">Add New Series</h3>
+    </div>
+
+    <form id="new-series-form" class="p-6 space-y-4">
+      <div>
+        <label class="block text-sm font-medium text-neutral-700 mb-2">Series Name *</label>
+        <input type="text" id="series_name" required class="w-full px-4 py-2 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent outline-none transition" placeholder="Series name">
+      </div>
+
+      <div>
+        <label class="block text-sm font-medium text-neutral-700 mb-2">Author *</label>
+        <select id="series_author_id" required class="w-full px-4 py-2 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent outline-none transition">
+          <option value="">Select author</option>
+          <% authors.each do |author| %>
+            <option value="<%= author.id %>"><%= author.name %></option>
+          <% end %>
+        </select>
+      </div>
+
+      <div id="series-modal-status" class="hidden">
+        <div class="rounded-lg p-3">
+          <p class="text-sm"></p>
+        </div>
+      </div>
+
+      <div class="flex gap-3 pt-4">
+        <button type="submit" class="flex-1 px-6 py-2 bg-gradient-to-r from-pink-500 to-pink-600 text-white font-medium rounded-lg hover:from-pink-600 hover:to-pink-700 transition">
+          Create Series
+        </button>
+        <button type="button" id="cancel-series-modal" class="px-6 py-2 bg-neutral-200 text-neutral-700 font-medium rounded-lg hover:bg-neutral-300 transition">
+          Cancel
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Add New Genre Modal -->
+<div id="new-genre-modal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+  <div class="bg-white rounded-xl shadow-2xl max-w-md w-full">
+    <div class="bg-gradient-to-r from-blue-500 to-blue-600 px-6 py-4">
+      <h3 class="text-xl font-semibold text-white">Add New Genre</h3>
+    </div>
+
+    <form id="new-genre-form" class="p-6 space-y-4">
+      <div>
+        <label class="block text-sm font-medium text-neutral-700 mb-2">Genre Name *</label>
+        <input type="text" id="genre_name" required class="w-full px-4 py-2 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition" placeholder="Genre name">
+      </div>
+
+      <div id="genre-modal-status" class="hidden">
+        <div class="rounded-lg p-3">
+          <p class="text-sm"></p>
+        </div>
+      </div>
+
+      <div class="flex gap-3 pt-4">
+        <button type="submit" class="flex-1 px-6 py-2 bg-gradient-to-r from-blue-500 to-blue-600 text-white font-medium rounded-lg hover:from-blue-600 hover:to-blue-700 transition">
+          Create Genre
+        </button>
+        <button type="button" id="cancel-genre-modal" class="px-6 py-2 bg-neutral-200 text-neutral-700 font-medium rounded-lg hover:bg-neutral-300 transition">
+          Cancel
+        </button>
+      </div>
+    </form>
+  </div>
+</div>

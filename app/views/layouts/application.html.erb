@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title><%= content_for(:title) || "My Library" %></title>
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="mobile-web-app-capable" content="yes">
+    <%= csrf_meta_tags %>
+    <%= csp_meta_tag %>
+
+    <%= yield :head %>
+
+    <%# Enable PWA manifest for installable apps (make sure to enable in config/routes.rb too!) %>
+    <%#= tag.link rel: "manifest", href: pwa_manifest_path(format: :json) %>
+
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+    <link rel="icon" href="/icon.png" type="image/png">
+    <link rel="apple-touch-icon" href="/icon.png">
+
+    <%# Includes all stylesheet files in app/assets/stylesheets %>
+    <%= stylesheet_link_tag :app, "data-turbo-track": "reload" %>
+    <%= javascript_importmap_tags %>
+  </head>
+
+  <body class="bg-neutral-50 min-h-screen">
+    <!-- Modern Minimal Header -->
+    <header class="bg-white/80 backdrop-blur-md border-b border-orange-100 sticky top-0 z-50">
+      <div class="max-w-7xl mx-auto px-6 lg:px-8 py-4">
+        <div class="flex items-center justify-between">
+          <%= link_to root_path, class: "flex items-center gap-3 hover:opacity-80 transition" do %>
+            <div class="w-10 h-10 bg-gradient-to-br from-orange-400 to-amber-500 rounded-lg flex items-center justify-center text-white text-xl font-bold shadow-sm">
+              📚
+            </div>
+            <div>
+              <h1 class="text-xl font-semibold text-neutral-900">My Library</h1>
+              <p class="text-xs text-neutral-500">Autumn Collection</p>
+            </div>
+          <% end %>
+
+          <!-- Navigation -->
+          <nav class="flex items-center gap-6">
+            <%= link_to "Books", books_path, class: "text-sm font-medium text-neutral-700 hover:text-orange-600 transition" %>
+            <%= link_to "Authors", authors_path, class: "text-sm font-medium text-neutral-700 hover:text-purple-600 transition" %>
+            <%= link_to "Series", series_index_path, class: "text-sm font-medium text-neutral-700 hover:text-pink-600 transition" %>
+            <%= link_to "Reading Goals", reading_goals_path, class: "text-sm font-medium text-neutral-700 hover:text-blue-600 transition" %>
+            <%= link_to "Leaderboard", leaderboard_path, class: "text-sm font-medium text-neutral-700 hover:text-amber-600 transition" %>
+
+            <!-- Currently Reading Dropdown -->
+            <% reading_books = Book.where(status: :reading).includes(:author) %>
+            <% if reading_books.any? %>
+              <div class="relative inline-block" id="currently-reading-wrapper">
+                <button class="peer flex items-center gap-1 text-sm font-medium text-blue-600 hover:text-blue-700 transition">
+                  Currently Reading
+                  <span class="inline-flex items-center justify-center w-5 h-5 text-xs font-bold text-white bg-blue-500 rounded-full"><%= reading_books.count %></span>
+                </button>
+
+                <!-- Dropdown with invisible padding at top -->
+                <div class="absolute left-0 top-full -mt-2 pt-2 w-80 opacity-0 invisible peer-hover:opacity-100 peer-hover:visible hover:opacity-100 hover:visible transition-all duration-200 z-50">
+                  <div class="bg-white rounded-lg shadow-lg border border-neutral-200">
+                    <div class="p-4 border-b border-neutral-100">
+                      <h3 class="font-semibold text-neutral-900 text-sm">Currently Reading</h3>
+                    </div>
+                    <div class="max-h-96 overflow-y-auto">
+                      <% reading_books.each do |book| %>
+                        <%= link_to edit_book_path(book), class: "block px-4 py-3 hover:bg-neutral-50 transition border-b border-neutral-100 last:border-b-0" do %>
+                          <div class="font-medium text-neutral-900 text-sm"><%= book.title %></div>
+                          <div class="text-xs text-neutral-600 mt-1">by <%= book.author.name %></div>
+                          <% if book.series.present? %>
+                            <div class="text-xs text-purple-600 mt-1">📚 <%= book.series.name %></div>
+                          <% end %>
+                        <% end %>
+                      <% end %>
+                    </div>
+                    <div class="p-3 border-t border-neutral-100">
+                      <%= link_to books_path(status: "reading"), class: "text-xs text-blue-600 hover:text-blue-700 font-medium" do %>
+                        View all →
+                      <% end %>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            <% end %>
+          </nav>
+        </div>
+      </div>
+    </header>
+
+    <main class="max-w-7xl mx-auto px-6 lg:px-8 py-8">
+      <!-- Flash Messages -->
+      <% if notice.present? %>
+        <div class="mb-6 rounded-lg bg-green-50 border border-green-200 p-4">
+          <p class="text-sm text-green-800"><%= notice %></p>
+        </div>
+      <% end %>
+
+      <% if alert.present? %>
+        <div class="mb-6 rounded-lg bg-red-50 border border-red-200 p-4">
+          <p class="text-sm text-red-800"><%= alert %></p>
+        </div>
+      <% end %>
+
+      <%= yield %>
+    </main>
+
+    <!-- Minimal Footer -->
+    <footer class="border-t border-neutral-200 mt-20">
+      <div class="max-w-7xl mx-auto px-6 lg:px-8 py-8">
+        <div class="flex items-center justify-center gap-2 text-sm text-neutral-500">
+          <span>Made with</span>
+          <span class="text-orange-500">❤️</span>
+        </div>
+      </div>
+    </footer>
+  </body>
+</html>

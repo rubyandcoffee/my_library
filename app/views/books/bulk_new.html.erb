@@ -1,0 +1,271 @@
+<div class="max-w-7xl mx-auto">
+  <div class="mb-8 flex items-center justify-between">
+    <div>
+      <h1 class="text-3xl font-bold text-neutral-900">Bulk Add Books</h1>
+      <p class="text-neutral-600 mt-1">Add multiple books at once with a spreadsheet-style interface</p>
+    </div>
+    <div class="flex gap-3">
+      <button type="button" id="add-new-author-btn" class="px-4 py-2 bg-purple-50 text-purple-600 font-medium rounded-lg hover:bg-purple-100 transition border border-purple-200">
+        + New Author
+      </button>
+      <button type="button" id="add-new-series-btn" class="px-4 py-2 bg-pink-50 text-pink-700 font-medium rounded-lg hover:bg-pink-100 transition border border-pink-200">
+        + New Series
+      </button>
+      <button type="button" id="add-new-genre-btn" class="px-4 py-2 bg-blue-50 text-blue-600 font-medium rounded-lg hover:bg-blue-100 transition border border-blue-200">
+        + New Genre
+      </button>
+    </div>
+  </div>
+
+  <div class="mb-6 bg-blue-50 border border-blue-200 rounded-lg p-4 text-sm text-blue-800">
+    <p class="font-semibold mb-1">Tips:</p>
+    <ul class="list-disc list-inside space-y-1">
+      <li>Recommended to only use this for <b>individually unique</b> books (i.e. not by same author)</li>
+      <li>If you want to quickly add books within the same series or by the same author, it's faster to <b>duplicate</b> the book (on the home page)</li>
+      <li>If you're adding lots of books, consider adding just <b>one shelf a day</b> (<i>so you don't get burned out!</i>) 😊</li>
+    </ul>
+  </div>
+
+  <% if @failed_books.present? %>
+    <div class="mb-6 rounded-lg bg-red-50 border border-red-200 p-4">
+      <h2 class="text-sm font-semibold text-red-800 mb-2">Some books could not be created:</h2>
+      <ul class="list-disc list-inside text-sm text-red-700">
+        <% @failed_books.each do |failure| %>
+          <li>Row <%= failure[:index] %>: <%= failure[:errors].join(', ') %></li>
+        <% end %>
+      </ul>
+    </div>
+  <% end %>
+
+  <%= form_with url: bulk_create_books_path, method: :post, class: "space-y-6" do |form| %>
+    <div class="bg-white rounded-lg shadow-sm border border-neutral-200 overflow-x-auto">
+      <table class="w-full text-sm" id="bulk-books-table">
+        <thead class="bg-neutral-50 border-b border-neutral-200">
+          <tr>
+            <th class="px-3 py-3 text-left font-semibold text-neutral-700 w-8">#</th>
+            <th class="px-3 py-3 text-left font-semibold text-neutral-700 min-w-[200px]">Title *</th>
+            <th class="px-3 py-3 text-left font-semibold text-neutral-700 min-w-[150px]">Author *</th>
+            <th class="px-3 py-3 text-left font-semibold text-neutral-700 min-w-[150px]">Series</th>
+            <th class="px-3 py-3 text-left font-semibold text-neutral-700 min-w-[120px]">Status</th>
+            <th class="px-3 py-3 text-left font-semibold text-neutral-700 min-w-[120px]">Ownership</th>
+            <th class="px-3 py-3 text-left font-semibold text-neutral-700 min-w-[100px]">Rating</th>
+            <th class="px-3 py-3 text-left font-semibold text-neutral-700 min-w-[200px]">Genres</th>
+            <th class="px-3 py-3 text-left font-semibold text-neutral-700 w-8">...</th>
+          </tr>
+        </thead>
+        <tbody id="bulk-books-tbody">
+          <% @book_count.times do |i| %>
+            <tr class="border-b border-neutral-100 hover:bg-neutral-50 book-row" data-row-index="<%= i %>">
+              <td class="px-3 py-3 text-neutral-500"><%= i + 1 %></td>
+              <td class="px-3 py-3">
+                <input type="text" name="books[<%= i %>][title]" placeholder="Enter book title" class="w-full px-3 py-2 border border-neutral-300 rounded focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none text-sm" />
+              </td>
+              <td class="px-3 py-3">
+                <select name="books[<%= i %>][author_id]" class="author-select w-full px-3 py-2 border border-neutral-300 rounded focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none text-sm">
+                  <option value="">Select author</option>
+                  <% @authors.each do |author| %>
+                    <option value="<%= author.id %>"><%= author.name %></option>
+                  <% end %>
+                </select>
+              </td>
+              <td class="px-3 py-3">
+                <select name="books[<%= i %>][series_id]" class="series-select w-full px-3 py-2 border border-neutral-300 rounded focus:ring-2 focus:ring-pink-500 focus:border-transparent outline-none text-sm">
+                  <option value="">None</option>
+                  <% @series_list.each do |series| %>
+                    <option value="<%= series.id %>" data-author-id="<%= series.author_id %>"><%= series.name %></option>
+                  <% end %>
+                </select>
+              </td>
+              <td class="px-3 py-3">
+                <select name="books[<%= i %>][status]" class="w-full px-3 py-2 border border-neutral-300 rounded focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none text-sm">
+                  <option value="">Select status</option>
+                  <option value="unread">Unread</option>
+                  <option value="reading">Reading</option>
+                  <option value="read">Read</option>
+                  <option value="tbr">TBR</option>
+                  <option value="dnf">DNF</option>
+                </select>
+              </td>
+              <td class="px-3 py-3">
+                <select name="books[<%= i %>][ownership]" class="w-full px-3 py-2 border border-neutral-300 rounded focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none text-sm">
+                  <option value="">Purchased?</option>
+                  <option value="owned">Yes</option>
+                  <option value="borrowed">Borrowed</option>
+                  <option value="wishlist">Wishlist</option>
+                  <option value="sold">Sold</option>
+                </select>
+              </td>
+              <td class="px-3 py-3">
+                <select name="books[<%= i %>][rating]" class="w-full px-3 py-2 border border-neutral-300 rounded focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none text-sm">
+                  <option value="">No rating</option>
+                  <option value="1">⭐</option>
+                  <option value="2">⭐⭐</option>
+                  <option value="3">⭐⭐⭐</option>
+                  <option value="4">⭐⭐⭐⭐</option>
+                  <option value="5">⭐⭐⭐⭐⭐</option>
+                </select>
+              </td>
+              <td class="px-3 py-3">
+                <select name="books[<%= i %>][genre_ids][]" multiple class="w-full px-3 py-2 border border-neutral-300 rounded focus:ring-2 focus:ring-pink-500 focus:border-transparent outline-none text-sm" size="1">
+                  <% @genres.each do |genre| %>
+                    <option value="<%= genre.id %>"><%= genre.name %></option>
+                  <% end %>
+                </select>
+                <input type="hidden" name="books[<%= i %>][genre_ids][]" value="" />
+              </td>
+              <td class="px-3 py-3 text-center">
+                <button type="button" class="remove-row text-red-600 hover:text-red-700 text-xs font-medium">❌</button>
+              </td>
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="flex items-center justify-between mt-6">
+      <button type="button" id="add-row" class="px-4 py-2 bg-neutral-100 text-neutral-700 font-medium rounded-lg hover:bg-neutral-200 transition text-sm">
+        + Add Row
+      </button>
+
+      <div class="flex gap-3">
+        <%= link_to "Cancel", books_path, class: "px-6 py-2 bg-neutral-200 text-neutral-700 font-medium rounded-lg hover:bg-neutral-300 transition" %>
+        <%= form.submit "Create All Books", class: "px-6 py-2 bg-gradient-to-r from-purple-500 to-pink-500 text-white font-medium rounded-lg hover:from-purple-600 hover:to-pink-600 transition cursor-pointer" %>
+      </div>
+    </div>
+  <% end %>
+</div>
+
+<!-- Add New Author Modal -->
+<div id="new-author-modal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+  <div class="bg-white rounded-xl shadow-2xl max-w-md w-full">
+    <div class="bg-gradient-to-r from-purple-500 to-purple-600 px-6 py-4">
+      <h3 class="text-xl font-semibold text-white">Add New Author</h3>
+    </div>
+
+    <form id="new-author-form" class="p-6 space-y-4">
+      <div>
+        <label class="block text-sm font-medium text-neutral-700 mb-2">Name *</label>
+        <input type="text" id="author_name" required class="w-full px-4 py-2 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none transition" placeholder="Author name">
+      </div>
+
+      <div>
+        <label class="block text-sm font-medium text-neutral-700 mb-2">Nationality</label>
+        <input type="text" id="author_nationality" list="nationalities-bulk" class="w-full px-4 py-2 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none transition" placeholder="Type or select nationality">
+        <datalist id="nationalities-bulk">
+          <option value="American">
+          <option value="Argentinian">
+          <option value="British">
+          <option value="Canadian">
+          <option value="Australian">
+          <option value="Irish">
+          <option value="French">
+          <option value="German">
+          <option value="Italian">
+          <option value="Spanish">
+          <option value="Japanese">
+          <option value="Chinese">
+          <option value="Indian">
+          <option value="Mexican">
+          <option value="Brazilian">
+          <option value="Russian">
+        </datalist>
+      </div>
+
+      <div>
+        <label class="block text-sm font-medium text-neutral-700 mb-2">Gender</label>
+        <select id="author_gender" class="w-full px-4 py-2 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none transition">
+          <option value="">Select gender</option>
+          <option value="male">Male</option>
+          <option value="female">Female</option>
+        </select>
+      </div>
+
+      <div id="author-modal-status" class="hidden">
+        <div class="rounded-lg p-3">
+          <p class="text-sm"></p>
+        </div>
+      </div>
+
+      <div class="flex gap-3 pt-4">
+        <button type="submit" class="flex-1 px-6 py-2 bg-gradient-to-r from-purple-500 to-purple-600 text-white font-medium rounded-lg hover:from-purple-600 hover:to-purple-700 transition">
+          Create Author
+        </button>
+        <button type="button" id="cancel-author-modal" class="px-6 py-2 bg-neutral-200 text-neutral-700 font-medium rounded-lg hover:bg-neutral-300 transition">
+          Cancel
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Add New Series Modal -->
+<div id="new-series-modal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+  <div class="bg-white rounded-xl shadow-2xl max-w-md w-full">
+    <div class="bg-gradient-to-r from-pink-500 to-pink-600 px-6 py-4">
+      <h3 class="text-xl font-semibold text-white">Add New Series</h3>
+    </div>
+
+    <form id="new-series-form" class="p-6 space-y-4">
+      <div>
+        <label class="block text-sm font-medium text-neutral-700 mb-2">Series Name *</label>
+        <input type="text" id="series_name" required class="w-full px-4 py-2 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent outline-none transition" placeholder="Series name">
+      </div>
+
+      <div>
+        <label class="block text-sm font-medium text-neutral-700 mb-2">Author *</label>
+        <select id="series_author_id" required class="w-full px-4 py-2 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent outline-none transition">
+          <option value="">Select author</option>
+          <% @authors.each do |author| %>
+            <option value="<%= author.id %>"><%= author.name %></option>
+          <% end %>
+        </select>
+      </div>
+
+      <div id="series-modal-status" class="hidden">
+        <div class="rounded-lg p-3">
+          <p class="text-sm"></p>
+        </div>
+      </div>
+
+      <div class="flex gap-3 pt-4">
+        <button type="submit" class="flex-1 px-6 py-2 bg-gradient-to-r from-pink-500 to-pink-600 text-white font-medium rounded-lg hover:from-pink-600 hover:to-pink-700 transition">
+          Create Series
+        </button>
+        <button type="button" id="cancel-series-modal" class="px-6 py-2 bg-neutral-200 text-neutral-700 font-medium rounded-lg hover:bg-neutral-300 transition">
+          Cancel
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Add New Genre Modal -->
+<div id="new-genre-modal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+  <div class="bg-white rounded-xl shadow-2xl max-w-md w-full">
+    <div class="bg-gradient-to-r from-blue-500 to-blue-600 px-6 py-4">
+      <h3 class="text-xl font-semibold text-white">Add New Genre</h3>
+    </div>
+
+    <form id="new-genre-form" class="p-6 space-y-4">
+      <div>
+        <label class="block text-sm font-medium text-neutral-700 mb-2">Genre Name *</label>
+        <input type="text" id="genre_name" required class="w-full px-4 py-2 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition" placeholder="Genre name">
+      </div>
+
+      <div id="genre-modal-status" class="hidden">
+        <div class="rounded-lg p-3">
+          <p class="text-sm"></p>
+        </div>
+      </div>
+
+      <div class="flex gap-3 pt-4">
+        <button type="submit" class="flex-1 px-6 py-2 bg-gradient-to-r from-blue-500 to-blue-600 text-white font-medium rounded-lg hover:from-blue-600 hover:to-blue-700 transition">
+          Create Genre
+        </button>
+        <button type="button" id="cancel-genre-modal" class="px-6 py-2 bg-neutral-200 text-neutral-700 font-medium rounded-lg hover:bg-neutral-300 transition">
+          Cancel
+        </button>
+      </div>
+    </form>
+  </div>
+</div>

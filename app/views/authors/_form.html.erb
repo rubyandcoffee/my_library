@@ -1,0 +1,88 @@
+<%= form_with(model: author, class: "space-y-6") do |form| %>
+  <% if author.errors.any? %>
+    <div class="rounded-lg bg-red-50 border border-red-200 p-4">
+      <h2 class="text-sm font-semibold text-red-800 mb-2"><%= pluralize(author.errors.count, "error") %> prohibited this author from being saved:</h2>
+      <ul class="list-disc list-inside text-sm text-red-700">
+        <% author.errors.each do |error| %>
+          <li><%= error.full_message %></li>
+        <% end %>
+      </ul>
+    </div>
+  <% end %>
+
+  <div>
+    <%= form.label :name, class: "block text-sm font-medium text-neutral-700 mb-2" %>
+    <%= form.text_field :name, class: "w-full px-4 py-2 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none transition", placeholder: "Enter author name" %>
+  </div>
+
+  <div class="grid grid-cols-2 gap-4">
+    <div>
+      <%= form.label :nationality, class: "block text-sm font-medium text-neutral-700 mb-2" %>
+      <%= form.text_field :nationality, list: "nationalities", class: "w-full px-4 py-2 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none transition", placeholder: "Type or select nationality" %>
+      <datalist id="nationalities">
+        <option value="American">
+        <option value="Argentinian">
+        <option value="British">
+        <option value="Canadian">
+        <option value="Australian">
+        <option value="French">
+        <option value="German">
+        <option value="Italian">
+        <option value="Spanish">
+        <option value="Japanese">
+        <option value="Chinese">
+        <option value="Indian">
+        <option value="Irish">
+        <option value="Scottish">
+        <option value="Welsh">
+        <option value="Swedish">
+        <option value="Norwegian">
+        <option value="Danish">
+        <option value="Finnish">
+        <option value="Dutch">
+        <option value="Belgian">
+        <option value="Swiss">
+        <option value="Austrian">
+        <option value="Polish">
+        <option value="Czech">
+        <option value="Russian">
+        <option value="Greek">
+        <option value="Turkish">
+        <option value="Egyptian">
+        <option value="South African">
+        <option value="Nigerian">
+        <option value="Kenyan">
+        <option value="Brazilian">
+        <option value="Argentinian">
+        <option value="Mexican">
+        <option value="Chilean">
+        <option value="Colombian">
+        <option value="Korean">
+        <option value="Vietnamese">
+        <option value="Thai">
+        <option value="Indonesian">
+        <option value="Malaysian">
+        <option value="Singaporean">
+        <option value="New Zealand">
+        <option value="Pakistani">
+        <option value="Bangladeshi">
+        <option value="Israeli">
+        <option value="Lebanese">
+        <option value="Jordanian">
+        <option value="Saudi Arabian">
+        <option value="Emirati">
+        <option value="Portuguese">
+      </datalist>
+    </div>
+
+    <div>
+      <%= form.label :gender, class: "block text-sm font-medium text-neutral-700 mb-2" %>
+      <%= form.select :gender, Author.genders.keys.map { |g| [g.titleize, g] }, { prompt: "Select gender" }, { class: "w-full px-4 py-2 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none transition" } %>
+    </div>
+  </div>
+
+  <div class="flex gap-3 pt-4">
+    <%= form.submit class: "px-6 py-2 bg-gradient-to-r from-purple-500 to-purple-600 text-white font-medium rounded-lg hover:from-purple-600 hover:to-purple-700 transition cursor-pointer" %>
+    <%= link_to "Cancel", authors_path, class: "px-6 py-2 bg-neutral-200 text-neutral-700 font-medium rounded-lg hover:bg-neutral-300 transition" %>
+  </div>
+<% end %>

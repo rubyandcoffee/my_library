@@ -1,0 +1,339 @@
+<% content_for :head do %>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<% end %>
+
+<div class="space-y-8">
+  <!-- Page Header -->
+  <div>
+    <h1 class="text-4xl font-bold text-neutral-900 mb-2">Leaderboard & Stats</h1>
+    <p class="text-neutral-600">Insights and analytics for your reading collection</p>
+  </div>
+
+  <!-- Top Rated Books Podium -->
+  <div class="bg-white rounded-xl border border-neutral-200 p-6">
+    <h2 class="text-2xl font-bold text-neutral-900 mb-6">Top Rated Books</h2>
+    <% if @top_books.any? %>
+      <!-- Podium: Top 3 -->
+      <% top_3 = @top_books.first(3) %>
+      <% if top_3.any? %>
+        <div class="flex items-end justify-center gap-4 mb-8">
+          <!-- 2nd Place -->
+          <% if top_3[1] %>
+            <%= link_to edit_book_path(top_3[1]), class: "block w-1/3" do %>
+              <div class="bg-gradient-to-br from-neutral-100 to-neutral-200 rounded-xl p-6 text-center transform hover:scale-105 transition border-2 border-neutral-300 shadow-lg">
+                <div class="text-4xl mb-3">🥈</div>
+                <div class="text-xl font-bold text-neutral-700 mb-1">#2</div>
+                <h3 class="font-bold text-neutral-900 mb-2 line-clamp-2"><%= top_3[1].title %></h3>
+                <p class="text-sm text-neutral-600 mb-2"><%= top_3[1].author.name %></p>
+                <div class="flex justify-center gap-1 mb-2">
+                  <% top_3[1].rating.times do %>
+                    <span class="text-yellow-500">⭐</span>
+                  <% end %>
+                </div>
+                <% if top_3[1].genres.any? %>
+                  <div class="flex flex-wrap gap-1 justify-center mt-3">
+                    <% top_3[1].genres.first(2).each do |genre| %>
+                      <span class="px-2 py-1 bg-white rounded-full text-xs text-neutral-600"><%= genre.name %></span>
+                    <% end %>
+                  </div>
+                <% end %>
+              </div>
+            <% end %>
+          <% end %>
+
+          <!-- 1st Place -->
+          <% if top_3[0] %>
+            <%= link_to edit_book_path(top_3[0]), class: "block w-1/3" do %>
+              <div class="bg-gradient-to-br from-yellow-100 to-yellow-200 rounded-xl p-6 text-center transform hover:scale-105 transition border-2 border-yellow-400 shadow-xl">
+                <div class="text-5xl mb-3">🏆</div>
+                <div class="text-2xl font-bold text-yellow-700 mb-1">#1</div>
+                <h3 class="font-bold text-neutral-900 mb-2 line-clamp-2 text-lg"><%= top_3[0].title %></h3>
+                <p class="text-sm text-neutral-700 mb-2"><%= top_3[0].author.name %></p>
+                <div class="flex justify-center gap-1 mb-2">
+                  <% top_3[0].rating.times do %>
+                    <span class="text-yellow-600 text-lg">⭐</span>
+                  <% end %>
+                </div>
+                <% if top_3[0].genres.any? %>
+                  <div class="flex flex-wrap gap-1 justify-center mt-3">
+                    <% top_3[0].genres.first(2).each do |genre| %>
+                      <span class="px-2 py-1 bg-white rounded-full text-xs text-neutral-700 font-medium"><%= genre.name %></span>
+                    <% end %>
+                  </div>
+                <% end %>
+              </div>
+            <% end %>
+          <% end %>
+
+          <!-- 3rd Place -->
+          <% if top_3[2] %>
+            <%= link_to edit_book_path(top_3[2]), class: "block w-1/3" do %>
+              <div class="bg-gradient-to-br from-orange-100 to-orange-200 rounded-xl p-6 text-center transform hover:scale-105 transition border-2 border-orange-300 shadow-lg">
+                <div class="text-4xl mb-3">🥉</div>
+                <div class="text-xl font-bold text-orange-700 mb-1">#3</div>
+                <h3 class="font-bold text-neutral-900 mb-2 line-clamp-2"><%= top_3[2].title %></h3>
+                <p class="text-sm text-neutral-600 mb-2"><%= top_3[2].author.name %></p>
+                <div class="flex justify-center gap-1 mb-2">
+                  <% top_3[2].rating.times do %>
+                    <span class="text-yellow-500">⭐</span>
+                  <% end %>
+                </div>
+                <% if top_3[2].genres.any? %>
+                  <div class="flex flex-wrap gap-1 justify-center mt-3">
+                    <% top_3[2].genres.first(2).each do |genre| %>
+                      <span class="px-2 py-1 bg-white rounded-full text-xs text-neutral-600"><%= genre.name %></span>
+                    <% end %>
+                  </div>
+                <% end %>
+              </div>
+            <% end %>
+          <% end %>
+        </div>
+      <% end %>
+
+      <!-- Remaining Books (4-10) -->
+      <% remaining = @top_books[3..-1] %>
+      <% if remaining && remaining.any? %>
+        <div class="border-t border-neutral-200 pt-6">
+          <h3 class="text-lg font-semibold text-neutral-700 mb-4">Also Highly Rated</h3>
+          <div class="space-y-2">
+            <% remaining.each_with_index do |book, index| %>
+              <%= link_to edit_book_path(book), class: "block" do %>
+                <div class="flex items-center gap-4 p-4 rounded-lg border border-neutral-200 hover:border-purple-300 hover:bg-purple-50 transition">
+                  <div class="flex-shrink-0 w-12 h-12 bg-gradient-to-br from-purple-100 to-pink-100 rounded-lg flex items-center justify-center">
+                    <span class="text-lg font-bold text-purple-700">#<%= index + 4 %></span>
+                  </div>
+                  <div class="flex-1 min-w-0">
+                    <h4 class="font-semibold text-neutral-900 truncate"><%= book.title %></h4>
+                    <p class="text-sm text-neutral-600"><%= book.author.name %></p>
+                  </div>
+                  <div class="flex-shrink-0 flex items-center gap-3">
+                    <% if book.genres.any? %>
+                      <div class="hidden md:flex gap-1">
+                        <% book.genres.first(2).each do |genre| %>
+                          <span class="px-2 py-1 bg-neutral-100 rounded-full text-xs text-neutral-600"><%= genre.name %></span>
+                        <% end %>
+                      </div>
+                    <% end %>
+                    <div class="flex gap-0.5">
+                      <% book.rating.times do %>
+                        <span class="text-yellow-500 text-sm">⭐</span>
+                      <% end %>
+                    </div>
+                  </div>
+                </div>
+              <% end %>
+            <% end %>
+          </div>
+        </div>
+      <% end %>
+    <% else %>
+      <div class="text-center py-12 text-neutral-500">
+        No rated books found. Add ratings to books to see them here.
+      </div>
+    <% end %>
+  </div>
+
+  <!-- Pie Charts Row -->
+  <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+    <!-- Gender Distribution Pie Chart -->
+    <div class="bg-white rounded-xl border border-neutral-200 p-6">
+      <h2 class="text-xl font-bold text-neutral-900 mb-4">Author Gender</h2>
+      <% if @gender_stats.any? %>
+        <div class="h-64">
+          <canvas id="genderChart"></canvas>
+        </div>
+      <% else %>
+        <div class="text-center py-12 text-neutral-500 text-sm">
+          No data available.
+        </div>
+      <% end %>
+    </div>
+
+    <!-- Status Distribution Pie Chart -->
+    <div class="bg-white rounded-xl border border-neutral-200 p-6">
+      <h2 class="text-xl font-bold text-neutral-900 mb-4">Reading Status</h2>
+      <% if @status_stats.any? %>
+        <div class="h-64">
+          <canvas id="statusChart"></canvas>
+        </div>
+      <% else %>
+        <div class="text-center py-12 text-neutral-500 text-sm">
+          No books yet.
+        </div>
+      <% end %>
+    </div>
+
+    <!-- Genre Distribution -->
+    <div class="bg-white rounded-xl border border-neutral-200 p-6">
+      <h2 class="text-xl font-bold text-neutral-900 mb-4">Genre Distribution</h2>
+      <% if @genre_stats.any? %>
+        <div class="h-64">
+          <canvas id="genreChart"></canvas>
+        </div>
+      <% else %>
+        <div class="text-center py-12 text-neutral-500 text-sm">
+          No data available.
+        </div>
+      <% end %>
+    </div>
+  </div>
+
+  <!-- Nationality Bar Chart (Full Width) -->
+  <div class="bg-white rounded-xl border border-neutral-200 p-6">
+    <h2 class="text-2xl font-bold text-neutral-900 mb-4">Top 10 Nationalities (Read Books)</h2>
+    <% if @nationality_stats.any? %>
+      <div class="h-80">
+        <canvas id="nationalityChart"></canvas>
+      </div>
+    <% else %>
+      <div class="text-center py-12 text-neutral-500">
+        No data available. Add nationality information to authors.
+      </div>
+    <% end %>
+  </div>
+</div>
+
+<script>
+document.addEventListener('turbo:load', () => {
+  // Gender Distribution Pie Chart
+  <% if @gender_stats.any? %>
+    const genderCtx = document.getElementById('genderChart');
+    if (genderCtx) {
+      new Chart(genderCtx, {
+        type: 'pie',
+        data: {
+          labels: <%= raw @gender_stats.keys.map(&:titleize).to_json %>,
+          datasets: [{
+            data: <%= raw @gender_stats.values.to_json %>,
+            backgroundColor: [
+              'rgba(147, 51, 234, 0.8)',
+              'rgba(236, 72, 153, 0.8)'
+            ],
+            borderColor: [
+              'rgb(147, 51, 234)',
+              'rgb(236, 72, 153)'
+            ],
+            borderWidth: 2
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: {
+              position: 'bottom'
+            }
+          }
+        }
+      });
+    }
+  <% end %>
+
+  // Status Distribution Pie Chart
+  <% if @status_stats.any? %>
+    const statusCtx = document.getElementById('statusChart');
+    if (statusCtx) {
+      new Chart(statusCtx, {
+        type: 'doughnut',
+        data: {
+          labels: <%= raw @status_stats.keys.map(&:titleize).to_json %>,
+          datasets: [{
+            data: <%= raw @status_stats.values.to_json %>,
+            backgroundColor: [
+              'rgba(163, 163, 163, 0.8)',
+              'rgba(34, 197, 94, 0.8)',
+              'rgba(147, 51, 234, 0.8)',
+              'rgba(236, 72, 153, 0.8)',
+              'rgba(59, 130, 246, 0.8)'
+            ],
+            borderColor: [
+              'rgb(163, 163, 163)',
+              'rgb(34, 197, 94)',
+              'rgb(147, 51, 234)',
+              'rgb(236, 72, 153)',
+              'rgb(59, 130, 246)'
+            ],
+            borderWidth: 2
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: {
+              position: 'bottom'
+            }
+          }
+        }
+      });
+    }
+  <% end %>
+
+  // Nationality Distribution Chart
+  <% if @nationality_stats.any? %>
+    const nationalityCtx = document.getElementById('nationalityChart');
+    if (nationalityCtx) {
+      new Chart(nationalityCtx, {
+        type: 'bar',
+        data: {
+          labels: <%= raw @nationality_stats.keys.to_json %>,
+          datasets: [{
+            label: 'Books Read',
+            data: <%= raw @nationality_stats.values.to_json %>,
+            backgroundColor: 'rgba(59, 130, 246, 0.8)',
+            borderColor: 'rgb(59, 130, 246)',
+            borderWidth: 2
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          scales: {
+            y: { beginAtZero: true }
+          },
+          plugins: {
+            legend: { display: false }
+          }
+        }
+      });
+    }
+  <% end %>
+
+  // Genre Distribution Chart
+  <% if @genre_stats.any? %>
+    const genreCtx = document.getElementById('genreChart');
+    if (genreCtx) {
+      new Chart(genreCtx, {
+        type: 'doughnut',
+        data: {
+          labels: <%= raw @genre_stats.keys.to_json %>,
+          datasets: [{
+            data: <%= raw @genre_stats.values.to_json %>,
+            backgroundColor: [
+              'rgba(251, 146, 60, 0.8)',
+              'rgba(147, 51, 234, 0.8)',
+              'rgba(236, 72, 153, 0.8)',
+              'rgba(59, 130, 246, 0.8)',
+              'rgba(34, 197, 94, 0.8)',
+              'rgba(245, 158, 11, 0.8)',
+              'rgba(239, 68, 68, 0.8)',
+              'rgba(20, 184, 166, 0.8)'
+            ],
+            borderWidth: 2
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: {
+              position: 'bottom'
+            }
+          }
+        }
+      });
+    }
+  <% end %>
+});
+</script>
