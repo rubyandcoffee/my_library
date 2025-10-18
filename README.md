@@ -193,7 +193,21 @@ This is a personal project, but suggestions and feedback are welcome!
 
 ## 📄 License
 
-This project is open source and available under the MIT License.
+Copyright © 2025. All rights reserved.
+
+This software is available for **personal, educational, and non-commercial use only**.
+
+**You may:**
+- ✅ Use and modify it for your own non-commercial use
+
+**You may NOT:**
+- ❌ Use this software for commercial purposes
+- ❌ Sell products or services based on this code
+- ❌ Redistribute this software commercially
+
+For commercial licensing inquiries, please contact the project owner.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED.
 
 ## 🙏 Acknowledgments
 
