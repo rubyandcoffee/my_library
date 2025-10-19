@@ -1,7 +1,13 @@
 <div class="max-w-2xl mx-auto">
-  <div class="mb-8">
-    <h1 class="text-3xl font-bold text-neutral-900 mb-2">Edit Book</h1>
-    <p class="text-neutral-600">Update book details</p>
+  <div class="mb-8 flex items-start justify-between">
+    <div>
+      <h1 class="text-3xl font-bold text-neutral-900 mb-2">Edit Book</h1>
+      <p class="text-neutral-600">Update book details</p>
+    </div>
+    <%= link_to duplicate_book_path(@book), class: "px-4 py-2 bg-orange-50 text-orange-700 font-medium rounded-lg hover:bg-orange-100 transition border border-orange-200 flex items-center gap-2" do %>
+      <span>📋</span>
+      <span>Duplicate</span>
+    <% end %>
   </div>
 
   <div class="bg-white rounded-xl border border-neutral-200 p-8">
