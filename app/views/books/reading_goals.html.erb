@@ -21,7 +21,8 @@
   </div>
 
   <!-- Stats Summary -->
-  <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+    <!-- Card 1: Total Books Planned -->
     <div class="bg-white rounded-xl border border-neutral-200 p-6">
       <div class="flex items-center gap-3">
         <div class="w-12 h-12 bg-gradient-to-br from-purple-400 to-purple-600 rounded-lg flex items-center justify-center text-white text-2xl">
@@ -34,26 +35,47 @@
       </div>
     </div>
 
+    <!-- Card 2: Overall Goal (with inline editing) -->
     <div class="bg-white rounded-xl border border-neutral-200 p-6">
       <div class="flex items-center gap-3">
-        <div class="w-12 h-12 bg-gradient-to-br from-green-400 to-green-600 rounded-lg flex items-center justify-center text-white text-2xl">
-          ✅
+        <div class="w-12 h-12 bg-gradient-to-br from-amber-400 to-amber-600 rounded-lg flex items-center justify-center text-white text-2xl">
+          🎯
         </div>
-        <div>
-          <p class="text-sm text-neutral-600">Books Completed</p>
-          <p class="text-3xl font-bold text-neutral-900"><%= @read_books %></p>
+        <div class="flex-1">
+          <p class="text-sm text-neutral-600">Overall Goal</p>
+          <%= turbo_frame_tag "yearly_goal_#{@yearly_goal.id}" do %>
+            <%= render partial: "yearly_reading_goals/goal_display", locals: { yearly_goal: @yearly_goal } %>
+          <% end %>
         </div>
       </div>
     </div>
 
+    <!-- Card 3: Completion Rate (combined with Books Completed) -->
     <div class="bg-white rounded-xl border border-neutral-200 p-6">
       <div class="flex items-center gap-3">
-        <div class="w-12 h-12 bg-gradient-to-br from-amber-400 to-amber-600 rounded-lg flex items-center justify-center text-white text-2xl">
+        <div class="w-12 h-12 bg-gradient-to-br from-green-400 to-green-600 rounded-lg flex items-center justify-center text-white text-2xl">
           📊
         </div>
         <div>
           <p class="text-sm text-neutral-600">Completion Rate</p>
-          <p class="text-3xl font-bold text-neutral-900"><%= @completion_percentage %>%</p>
+          <p class="text-2xl font-bold text-neutral-900">
+            <%= @read_books %> / <%= @yearly_goal.target_books %> (<%= @completion_percentage %>%)
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Card 4: Reading Settings -->
+    <div class="bg-white rounded-xl border border-neutral-200 p-6">
+      <div class="flex items-start gap-3">
+        <div class="w-12 h-12 bg-gradient-to-br from-blue-400 to-blue-600 rounded-lg flex items-center justify-center text-white text-2xl flex-shrink-0">
+          ⚙️
+        </div>
+        <div class="flex-1">
+          <p class="text-sm text-neutral-600 mb-2">Reading Settings</p>
+          <%= turbo_frame_tag "user_settings_display" do %>
+            <%= render partial: "user_settings/settings_display", locals: { user_setting: @user_settings } %>
+          <% end %>
         </div>
       </div>
     </div>
@@ -90,6 +112,63 @@
               </span>
             </div>
           </div>
+
+          <!-- Reading Limit Progress Bar -->
+          <% if books.any? %>
+            <% stats = @monthly_stats[month_num] %>
+            <% hours_planned = (stats[:total_minutes] / 60.0).round(1) %>
+            <% hours_capacity = (stats[:monthly_capacity] / 60.0).round(1) %>
+            <% percentage = [stats[:percentage_used], 100].min %> <!-- Cap visual bar at 100% -->
+
+            <div class="px-6 py-4 border-b border-neutral-200 bg-neutral-50">
+              <!-- Progress Bar -->
+              <div class="mb-2">
+                <div class="flex items-center justify-between text-xs mb-1">
+                  <span class="font-medium text-neutral-700">Reading Time</span>
+                  <span class="text-neutral-600"><%= hours_planned %> / <%= hours_capacity %> hours</span>
+                </div>
+                <div class="w-full bg-neutral-200 rounded-full h-2.5 overflow-hidden">
+                  <%
+                    bar_color = case stats[:status]
+                    when :over_limit
+                      "bg-red-500"
+                    when :at_limit
+                      "bg-yellow-500"
+                    else
+                      "bg-green-500"
+                    end
+                  %>
+                  <div class="<%= bar_color %> h-2.5 rounded-full transition-all duration-300" style="width: <%= percentage %>%"></div>
+                </div>
+              </div>
+
+              <!-- Status Messages -->
+              <div class="space-y-1">
+                <% if stats[:status] == :over_limit %>
+                  <div class="flex items-center gap-1 text-xs text-red-700">
+                    <span>⚠️</span>
+                    <span class="font-medium">Over limit by <%= (hours_planned - hours_capacity).round(1) %> hours (<%= stats[:percentage_used] %>%)</span>
+                  </div>
+                <% elsif stats[:status] == :at_limit %>
+                  <div class="flex items-center gap-1 text-xs text-yellow-700">
+                    <span>⚠️</span>
+                    <span class="font-medium">Near capacity (<%= stats[:percentage_used] %>%)</span>
+                  </div>
+                <% else %>
+                  <div class="text-xs text-green-700">
+                    <span class="font-medium"><%= (100 - stats[:percentage_used]) %>% remaining</span>
+                  </div>
+                <% end %>
+
+                <% if stats[:books_missing_pages].any? %>
+                  <div class="flex items-center gap-1 text-xs text-orange-700">
+                    <span>⚠️</span>
+                    <span><%= stats[:books_missing_pages].count %> book(s) missing page count (using 250 page default)</span>
+                  </div>
+                <% end %>
+              </div>
+            </div>
+          <% end %>
 
           <!-- Books List -->
           <div class="p-4">

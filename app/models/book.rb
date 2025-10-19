@@ -22,6 +22,9 @@ class Book < ApplicationRecord
     sold: 3
   }
 
+  # Default page count for books without page_count set
+  DEFAULT_PAGE_COUNT = 250
+
   # Calculate reading time based on 239 WPM reading speed
   # Average: 250-300 words per page
   def estimated_reading_time
@@ -44,5 +47,23 @@ class Book < ApplicationRecord
         "#{hours} hr #{remaining_minutes} min"
       end
     end
+  end
+
+  # Calculate reading time in minutes (raw number for calculations)
+  # Uses DEFAULT_PAGE_COUNT if page_count is not set
+  def estimated_reading_time_minutes
+    pages = page_count.presence || DEFAULT_PAGE_COUNT
+    return 0 if pages <= 0
+
+    words_per_page = 275
+    total_words = pages * words_per_page
+    reading_speed_wpm = 239
+
+    (total_words / reading_speed_wpm.to_f).round
+  end
+
+  # Check if this book is using the default page count
+  def using_default_page_count?
+    page_count.blank? || page_count <= 0
   end
 end

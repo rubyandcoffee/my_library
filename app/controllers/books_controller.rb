@@ -93,6 +93,15 @@ class BooksController < ApplicationController
     @year = params[:year]&.to_i || Date.today.year
     @books_by_month = {}
 
+    # Get user settings and yearly goal
+    @user_settings = UserSetting.current
+    @yearly_goal = YearlyReadingGoal.find_or_create_for_year(@year)
+
+    # Reading capacity from user settings
+    daily_reading_minutes = @user_settings.daily_reading_minutes
+    days_per_month = 30
+    monthly_capacity = daily_reading_minutes * days_per_month
+
     # Initialize all 12 months
     (1..12).each do |month|
       @books_by_month[month] = []
@@ -112,7 +121,43 @@ class BooksController < ApplicationController
     # Calculate stats
     @total_books = books_with_goals.count
     @read_books = books_with_goals.where(status: :read).count
-    @completion_percentage = @total_books > 0 ? (@read_books.to_f / @total_books * 100).round : 0
+    # Completion percentage now based on yearly goal
+    @completion_percentage = if @yearly_goal.target_books > 0
+      (@read_books.to_f / @yearly_goal.target_books * 100).round
+    else
+      0
+    end
+
+    # Calculate monthly reading stats
+    @monthly_stats = {}
+    (1..12).each do |month|
+      books = @books_by_month[month]
+      total_minutes = 0
+      books_missing_pages = []
+
+      books.each do |book|
+        total_minutes += book.estimated_reading_time_minutes
+        books_missing_pages << book if book.using_default_page_count?
+      end
+
+      percentage_used = monthly_capacity > 0 ? ((total_minutes.to_f / monthly_capacity) * 100).round : 0
+
+      status = if percentage_used > 100
+        :over_limit
+      elsif percentage_used >= 80
+        :at_limit
+      else
+        :under_limit
+      end
+
+      @monthly_stats[month] = {
+        total_minutes: total_minutes,
+        monthly_capacity: monthly_capacity,
+        percentage_used: percentage_used,
+        status: status,
+        books_missing_pages: books_missing_pages
+      }
+    end
   end
 
   def bulk_create
