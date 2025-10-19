@@ -7,12 +7,14 @@ class SeriesControllerTest < ActionDispatch::IntegrationTest
   end
 
   test "should get new" do
-    get series_new_url
+    get new_series_url
     assert_response :success
   end
 
   test "should get edit" do
-    get series_edit_url
+    author = Author.create!(name: "Test Author")
+    series = Series.create!(name: "Test Series", author: author)
+    get edit_series_url(series)
     assert_response :success
   end
 end

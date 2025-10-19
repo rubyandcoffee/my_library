@@ -1,5 +1,5 @@
 class BooksController < ApplicationController
-  before_action :set_book, only: [:edit, :update, :destroy]
+  before_action :set_book, only: [ :edit, :update, :destroy ]
 
   def index
     @books = Book.includes(:author, :genres, :series).all
@@ -127,7 +127,7 @@ class BooksController < ApplicationController
 
       # Check if book already exists (same title and author, regardless of series)
       existing_book = Book.where(
-        'LOWER(title) = ?', book_data[:title].downcase
+        "LOWER(title) = ?", book_data[:title].downcase
       ).where(
         author_id: book_data[:author_id]
       ).first
@@ -164,7 +164,7 @@ class BooksController < ApplicationController
 
     if failed_books.any?
       flash.now[:alert] = "#{failed_books.count} #{'book'.pluralize(failed_books.count)} could not be created."
-      flash.now[:notice] = messages.join(' ') if messages.any?
+      flash.now[:notice] = messages.join(" ") if messages.any?
       @authors = Author.all
       @genres = Genre.all
       @series_list = Series.all
@@ -172,7 +172,7 @@ class BooksController < ApplicationController
       @failed_books = failed_books
       render :bulk_new, status: :unprocessable_entity
     else
-      redirect_to books_path, notice: messages.join(' ')
+      redirect_to books_path, notice: messages.join(" ")
     end
   end
 

@@ -7,17 +7,17 @@ class LeaderboardController < ApplicationController
     # Gender distribution (only read books)
     read_books = Book.includes(:author).where(status: :read)
     @gender_stats = read_books.joins(:author).where.not(authors: { gender: nil })
-                               .group('authors.gender').count
+                               .group("authors.gender").count
 
     # Nationality distribution (top 10)
     @nationality_stats = Book.includes(:author).where(status: :read)
                               .joins(:author).where.not(authors: { nationality: nil })
-                              .group('authors.nationality').count
+                              .group("authors.nationality").count
                               .sort_by { |k, v| -v }.first(10).to_h
 
     # Genre distribution
     @genre_stats = Book.joins(:genres).where(status: :read)
-                       .group('genres.name').count
+                       .group("genres.name").count
                        .sort_by { |k, v| -v }.to_h
 
     # Reading status distribution

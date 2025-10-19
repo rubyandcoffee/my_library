@@ -1,5 +1,5 @@
 class SeriesController < ApplicationController
-  before_action :set_series, only: [:edit, :update, :destroy]
+  before_action :set_series, only: [ :edit, :update, :destroy ]
 
   def index
     @series = Series.includes(:author, :books).all

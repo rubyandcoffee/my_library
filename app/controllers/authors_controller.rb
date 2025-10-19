@@ -1,5 +1,5 @@
 class AuthorsController < ApplicationController
-  before_action :set_author, only: [:edit, :update, :destroy]
+  before_action :set_author, only: [ :edit, :update, :destroy ]
 
   def index
     @authors = Author.all.order(:name)
@@ -58,7 +58,7 @@ class AuthorsController < ApplicationController
       next if author_data[:name].blank?
 
       # Check if author already exists (case-insensitive)
-      existing_author = Author.find_by('LOWER(name) = ?', author_data[:name].downcase)
+      existing_author = Author.find_by("LOWER(name) = ?", author_data[:name].downcase)
       if existing_author
         skipped_authors << { index: index + 1, name: author_data[:name] }
         next
@@ -81,10 +81,10 @@ class AuthorsController < ApplicationController
       @failed_authors = failed_authors
       @author_count = authors_params.count
       flash.now[:alert] = "#{failed_authors.count} author(s) could not be created."
-      flash.now[:notice] = messages.join(' ') if messages.any?
+      flash.now[:notice] = messages.join(" ") if messages.any?
       render :bulk_new, status: :unprocessable_entity
     else
-      redirect_to authors_path, notice: messages.join(' ')
+      redirect_to authors_path, notice: messages.join(" ")
     end
   end
 
