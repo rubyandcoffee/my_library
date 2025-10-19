@@ -4,3 +4,13 @@
 a, button, [type="button"], [type="submit"], [type="reset"], label[for], select {
   cursor: pointer;
 }
+
+/* Backdrop blur for modals */
+#new-author-modal:not(.hidden),
+#new-series-modal:not(.hidden),
+#new-genre-modal:not(.hidden),
+#bulk-genre-modal:not(.hidden),
+#book-selection-modal:not(.hidden) {
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+}

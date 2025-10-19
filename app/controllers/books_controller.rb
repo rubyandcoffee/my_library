@@ -118,11 +118,24 @@ class BooksController < ApplicationController
   def bulk_create
     books_params = params[:books]&.to_unsafe_h || {}
     created_books = []
+    skipped_books = []
     failed_books = []
 
     books_params.each do |index, book_data|
       # Skip empty rows (rows with no title)
       next if book_data[:title].blank?
+
+      # Check if book already exists (same title and author, regardless of series)
+      existing_book = Book.where(
+        'LOWER(title) = ?', book_data[:title].downcase
+      ).where(
+        author_id: book_data[:author_id]
+      ).first
+
+      if existing_book
+        skipped_books << { index: index.to_i + 1, title: book_data[:title] }
+        next
+      end
 
       book = Book.new(
         title: book_data[:title],
@@ -144,16 +157,22 @@ class BooksController < ApplicationController
       end
     end
 
-    if failed_books.empty?
-      redirect_to books_path, notice: "Successfully created #{created_books.count} #{'book'.pluralize(created_books.count)}."
-    else
-      flash[:alert] = "Some books could not be created. Please check the errors."
+    # Build success/warning message
+    messages = []
+    messages << "Successfully created #{created_books.count} #{'book'.pluralize(created_books.count)}." if created_books.any?
+    messages << "Skipped #{skipped_books.count} #{'book'.pluralize(skipped_books.count)} that already exist." if skipped_books.any?
+
+    if failed_books.any?
+      flash.now[:alert] = "#{failed_books.count} #{'book'.pluralize(failed_books.count)} could not be created."
+      flash.now[:notice] = messages.join(' ') if messages.any?
       @authors = Author.all
       @genres = Genre.all
       @series_list = Series.all
       @book_count = books_params.count
       @failed_books = failed_books
       render :bulk_new, status: :unprocessable_entity
+    else
+      redirect_to books_path, notice: messages.join(' ')
     end
   end
 

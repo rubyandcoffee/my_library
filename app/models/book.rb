@@ -3,6 +3,10 @@ class Book < ApplicationRecord
   belongs_to :series, optional: true
   has_and_belongs_to_many :genres
 
+  validates :title, presence: true
+  validates :title, uniqueness: { scope: :author_id, case_sensitive: false }
+  validates :rating, inclusion: { in: 1..5, allow_nil: true }
+
   enum :status, {
     unread: 0,
     read: 1,
@@ -17,8 +21,6 @@ class Book < ApplicationRecord
     wishlist: 2,
     sold: 3
   }
-
-  validates :rating, inclusion: { in: 1..5, allow_nil: true }
 
   # Calculate reading time based on 239 WPM reading speed
   # Average: 250-300 words per page

@@ -108,12 +108,45 @@
         + New Genre
       </button>
     </div>
-    <div id="genre-checkboxes" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2">
-      <% genres.each do |genre| %>
-        <label class="flex items-center gap-2 px-3 py-2 bg-neutral-50 border border-neutral-200 rounded-lg cursor-pointer hover:bg-purple-50 hover:border-purple-300 transition">
-          <%= form.check_box :genre_ids, { multiple: true, class: "rounded border-neutral-300 text-purple-600 focus:ring-purple-500" }, genre.id, nil %>
-          <span class="text-sm text-neutral-700"><%= genre.name %></span>
-        </label>
+
+    <!-- Selected genres as tags -->
+    <div id="selected-genres" class="flex flex-wrap gap-2 mb-3 min-h-[2.5rem] p-2 border border-neutral-200 rounded-lg bg-neutral-50">
+      <% if book.genres.any? %>
+        <% book.genres.each do |genre| %>
+          <span class="genre-tag inline-flex items-center gap-1.5 px-3 py-1 bg-purple-100 text-purple-700 rounded-full text-sm font-medium" data-genre-id="<%= genre.id %>">
+            <%= genre.name %>
+            <button type="button" class="remove-genre text-purple-600 hover:text-purple-800 font-bold" data-genre-id="<%= genre.id %>">&times;</button>
+          </span>
+        <% end %>
+      <% else %>
+        <span class="text-sm text-neutral-400 italic" id="no-genres-placeholder">No genres selected - search below to add</span>
+      <% end %>
+    </div>
+
+    <!-- Search input -->
+    <div class="relative">
+      <input
+        type="text"
+        id="genre-search"
+        placeholder="Search genres..."
+        class="w-full px-4 py-2 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none transition"
+        autocomplete="off"
+      />
+
+      <!-- Dropdown with genre options -->
+      <div id="genre-dropdown" class="hidden absolute z-10 w-full mt-1 bg-white border border-neutral-300 rounded-lg shadow-lg max-h-60 overflow-y-auto">
+        <% genres.each do |genre| %>
+          <div class="genre-option px-4 py-2 cursor-pointer hover:bg-purple-50 transition text-sm" data-genre-id="<%= genre.id %>" data-genre-name="<%= genre.name %>">
+            <%= genre.name %>
+          </div>
+        <% end %>
+      </div>
+    </div>
+
+    <!-- Hidden inputs for form submission -->
+    <div id="genre-hidden-inputs">
+      <% book.genre_ids.each do |genre_id| %>
+        <input type="hidden" name="book[genre_ids][]" value="<%= genre_id %>" data-genre-id="<%= genre_id %>">
       <% end %>
     </div>
   </div>
@@ -152,8 +185,8 @@
 <% end %>
 
 <!-- Add New Author Modal -->
-<div id="new-author-modal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
-  <div class="bg-white rounded-xl shadow-2xl max-w-md w-full">
+<div id="new-author-modal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4" style="position: fixed; top: 0; left: 0; right: 0; bottom: 0; z-index: 9999;">
+  <div class="bg-white rounded-xl shadow-2xl max-w-md w-full" style="position: relative; z-index: 10000;">
     <div class="bg-gradient-to-r from-purple-500 to-purple-600 px-6 py-4">
       <h3 class="text-xl font-semibold text-white">Add New Author</h3>
     </div>
@@ -182,6 +215,7 @@
           <option value="Chinese">
           <option value="Indian">
           <option value="Mexican">
+          <option value="Nepalese">
           <option value="Brazilian">
           <option value="Russian">
         </datalist>
@@ -215,8 +249,8 @@
 </div>
 
 <!-- Add New Series Modal -->
-<div id="new-series-modal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
-  <div class="bg-white rounded-xl shadow-2xl max-w-md w-full">
+<div id="new-series-modal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4" style="position: fixed; top: 0; left: 0; right: 0; bottom: 0; z-index: 9999;">
+  <div class="bg-white rounded-xl shadow-2xl max-w-md w-full" style="position: relative; z-index: 10000;">
     <div class="bg-gradient-to-r from-pink-500 to-pink-600 px-6 py-4">
       <h3 class="text-xl font-semibold text-white">Add New Series</h3>
     </div>
@@ -256,16 +290,16 @@
 </div>
 
 <!-- Add New Genre Modal -->
-<div id="new-genre-modal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
-  <div class="bg-white rounded-xl shadow-2xl max-w-md w-full">
-    <div class="bg-gradient-to-r from-blue-500 to-blue-600 px-6 py-4">
-      <h3 class="text-xl font-semibold text-white">Add New Genre</h3>
+<div id="new-genre-modal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4" style="position: fixed; top: 0; left: 0; right: 0; bottom: 0; z-index: 9999;">
+  <div class="bg-white rounded-xl shadow-2xl max-w-md w-full" style="position: relative; z-index: 10000;">
+    <div style="background: linear-gradient(to right, rgb(34 197 94), rgb(22 163 74)); padding: 1.5rem;">
+      <h3 style="font-size: 1.25rem; font-weight: 600; color: white; margin: 0;">Add New Genre</h3>
     </div>
 
     <form id="new-genre-form" class="p-6 space-y-4">
       <div>
         <label class="block text-sm font-medium text-neutral-700 mb-2">Genre Name *</label>
-        <input type="text" id="genre_name" required class="w-full px-4 py-2 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition" placeholder="Genre name">
+        <input type="text" id="genre_name" required class="w-full px-4 py-2 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent outline-none transition" placeholder="Genre name">
       </div>
 
       <div id="genre-modal-status" class="hidden">
@@ -275,7 +309,7 @@
       </div>
 
       <div class="flex gap-3 pt-4">
-        <button type="submit" class="flex-1 px-6 py-2 bg-gradient-to-r from-blue-500 to-blue-600 text-white font-medium rounded-lg hover:from-blue-600 hover:to-blue-700 transition">
+        <button type="submit" style="flex: 1; padding: 0.5rem 1.5rem; background: linear-gradient(to right, rgb(34 197 94), rgb(22 163 74)); color: white; font-weight: 500; border-radius: 0.5rem; border: none; cursor: pointer;">
           Create Genre
         </button>
         <button type="button" id="cancel-genre-modal" class="px-6 py-2 bg-neutral-200 text-neutral-700 font-medium rounded-lg hover:bg-neutral-300 transition">

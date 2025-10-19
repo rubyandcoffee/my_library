@@ -22,6 +22,9 @@ gem "jbuilder"
 # Pagination [https://github.com/kaminari/kaminari]
 gem "kaminari"
 
+# Countries and nationalities data [https://github.com/countries/countries]
+gem "countries"
+
 # Use Active Model has_secure_password [https://guides.rubyonrails.org/active_model_basics.html#securepassword]
 # gem "bcrypt", "~> 3.1.7"
 
