@@ -2,17 +2,18 @@ require "test_helper"
 
 class AuthorsControllerTest < ActionDispatch::IntegrationTest
   test "should get index" do
-    get authors_index_url
+    get authors_url
     assert_response :success
   end
 
   test "should get new" do
-    get authors_new_url
+    get new_author_url
     assert_response :success
   end
 
   test "should get edit" do
-    get authors_edit_url
+    author = Author.create!(name: "Test Author")
+    get edit_author_url(author)
     assert_response :success
   end
 end

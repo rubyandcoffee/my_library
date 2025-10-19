@@ -10,7 +10,12 @@ Rails.application.routes.draw do
       post :bulk_create
     end
   end
-  resources :authors
+  resources :authors do
+    collection do
+      get :bulk_new
+      post :bulk_create
+    end
+  end
   resources :series
   resources :genres
 

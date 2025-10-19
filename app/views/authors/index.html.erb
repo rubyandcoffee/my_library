@@ -4,9 +4,14 @@
       <h1 class="text-3xl font-bold text-neutral-900">Authors</h1>
       <p class="text-neutral-600 mt-1">Manage your author collection</p>
     </div>
-    <%= link_to new_author_path, class: "px-6 py-2 bg-gradient-to-r from-purple-500 to-purple-600 text-white font-medium rounded-lg hover:from-purple-600 hover:to-purple-700 transition shadow-sm" do %>
-      Add New Author
-    <% end %>
+    <div class="flex gap-3">
+      <%= link_to new_author_path, class: "px-6 py-2 bg-gradient-to-r from-purple-500 to-purple-600 text-white font-medium rounded-lg hover:from-purple-600 hover:to-purple-700 transition shadow-sm" do %>
+        Add New Author
+      <% end %>
+      <%= link_to bulk_new_authors_path, class: "px-6 py-2 bg-white border-2 border-purple-500 text-purple-700 font-medium rounded-lg hover:bg-purple-50 transition shadow-sm" do %>
+        Bulk Add Authors
+      <% end %>
+    </div>
   </div>
 
   <% if @authors.any? %>

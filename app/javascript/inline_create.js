@@ -1,4 +1,23 @@
 // Inline creation of authors and series from book form
+
+// Helper function to show success notification at top of page
+function showSuccessNotification(message) {
+  const notification = document.createElement('div');
+  notification.className = 'fixed top-4 left-1/2 transform -translate-x-1/2 z-50 mb-6 rounded-lg bg-green-50 border border-green-200 p-4 shadow-lg';
+  notification.innerHTML = `<p class="text-sm text-green-800">${message}</p>`;
+
+  document.body.appendChild(notification);
+
+  // Auto-remove after 3 seconds
+  setTimeout(() => {
+    notification.style.opacity = '0';
+    notification.style.transition = 'opacity 0.3s ease';
+    setTimeout(() => {
+      notification.remove();
+    }, 300);
+  }, 3000);
+}
+
 document.addEventListener('turbo:load', () => {
   // Author Modal
   const authorModal = document.getElementById('new-author-modal');
@@ -28,6 +47,7 @@ document.addEventListener('turbo:load', () => {
   if (authorBtn && authorModal) {
     authorBtn.addEventListener('click', () => {
       authorModal.classList.remove('hidden');
+      authorModal.style.display = 'flex';
       document.getElementById('author_name').focus();
     });
   }
@@ -36,6 +56,7 @@ document.addEventListener('turbo:load', () => {
   if (cancelAuthorBtn && authorModal) {
     cancelAuthorBtn.addEventListener('click', () => {
       authorModal.classList.add('hidden');
+      authorModal.style.display = 'none';
       authorForm.reset();
       authorStatus.classList.add('hidden');
     });
@@ -46,6 +67,7 @@ document.addEventListener('turbo:load', () => {
     authorModal.addEventListener('click', (e) => {
       if (e.target === authorModal) {
         authorModal.classList.add('hidden');
+        authorModal.style.display = 'none';
         authorForm.reset();
         authorStatus.classList.add('hidden');
       }
@@ -109,10 +131,11 @@ document.addEventListener('turbo:load', () => {
 
         // Close modal
         authorModal.classList.add('hidden');
+        authorModal.style.display = 'none';
         authorForm.reset();
 
-        // Show success message
-        alert(`Author "${data.name}" created successfully!`);
+        // Show success message as inline notification
+        showSuccessNotification(`Author "${data.name}" created successfully!`);
       } else {
         throw new Error(data.errors?.join(', ') || 'Failed to create author');
       }
@@ -138,6 +161,7 @@ document.addEventListener('turbo:load', () => {
         document.getElementById('series_author_id').value = currentAuthorId;
       }
       seriesModal.classList.remove('hidden');
+      seriesModal.style.display = 'flex';
       document.getElementById('series_name').focus();
     });
   }
@@ -146,6 +170,7 @@ document.addEventListener('turbo:load', () => {
   if (cancelSeriesBtn && seriesModal) {
     cancelSeriesBtn.addEventListener('click', () => {
       seriesModal.classList.add('hidden');
+      seriesModal.style.display = 'none';
       seriesForm.reset();
       seriesStatus.classList.add('hidden');
     });
@@ -156,6 +181,7 @@ document.addEventListener('turbo:load', () => {
     seriesModal.addEventListener('click', (e) => {
       if (e.target === seriesModal) {
         seriesModal.classList.add('hidden');
+        seriesModal.style.display = 'none';
         seriesForm.reset();
         seriesStatus.classList.add('hidden');
       }
@@ -213,10 +239,11 @@ document.addEventListener('turbo:load', () => {
 
         // Close modal
         seriesModal.classList.add('hidden');
+        seriesModal.style.display = 'none';
         seriesForm.reset();
 
-        // Show success message
-        alert(`Series "${data.name}" created successfully!`);
+        // Show success message as inline notification
+        showSuccessNotification(`Series "${data.name}" created successfully!`);
       } else {
         throw new Error(data.errors?.join(', ') || 'Failed to create series');
       }
@@ -237,6 +264,7 @@ document.addEventListener('turbo:load', () => {
   if (genreBtn && genreModal) {
     genreBtn.addEventListener('click', () => {
       genreModal.classList.remove('hidden');
+      genreModal.style.display = 'flex';
       document.getElementById('genre_name').focus();
     });
   }
@@ -245,6 +273,7 @@ document.addEventListener('turbo:load', () => {
   if (cancelGenreBtn && genreModal) {
     cancelGenreBtn.addEventListener('click', () => {
       genreModal.classList.add('hidden');
+      genreModal.style.display = 'none';
       genreForm.reset();
       genreStatus.classList.add('hidden');
     });
@@ -255,6 +284,7 @@ document.addEventListener('turbo:load', () => {
     genreModal.addEventListener('click', (e) => {
       if (e.target === genreModal) {
         genreModal.classList.add('hidden');
+        genreModal.style.display = 'none';
         genreForm.reset();
         genreStatus.classList.add('hidden');
       }
@@ -334,10 +364,11 @@ document.addEventListener('turbo:load', () => {
 
         // Close modal
         genreModal.classList.add('hidden');
+        genreModal.style.display = 'none';
         genreForm.reset();
 
-        // Show success message
-        alert(`Genre "${data.name}" created successfully!`);
+        // Show success message as inline notification
+        showSuccessNotification(`Genre "${data.name}" created successfully!`);
       } else {
         throw new Error(data.errors?.join(', ') || 'Failed to create genre');
       }

@@ -1,0 +1,135 @@
+<div class="max-w-7xl mx-auto">
+  <div class="mb-8">
+    <h1 class="text-3xl font-bold text-neutral-900">Bulk Add Authors</h1>
+    <p class="text-neutral-600 mt-1">Add multiple authors at once with a spreadsheet-style interface</p>
+  </div>
+
+  <div class="mb-6 bg-purple-50 border border-purple-200 rounded-lg p-4 text-sm text-purple-800">
+    <p class="font-semibold mb-1">Tips:</p>
+    <ul class="list-disc list-inside space-y-1">
+      <li>Only the Name field is required</li>
+      <li>Nationality and Gender are optional</li>
+      <li>Leave rows blank if you don't need them</li>
+    </ul>
+  </div>
+
+  <% if @failed_authors.present? %>
+    <div class="mb-6 rounded-lg bg-red-50 border border-red-200 p-4">
+      <h2 class="text-sm font-semibold text-red-800 mb-2">Some authors could not be created:</h2>
+      <ul class="list-disc list-inside text-sm text-red-700">
+        <% @failed_authors.each do |failure| %>
+          <li>Row <%= failure[:index] %>: <%= failure[:errors].join(', ') %></li>
+        <% end %>
+      </ul>
+    </div>
+  <% end %>
+
+  <%= form_with url: bulk_create_authors_path, method: :post, class: "space-y-6" do |form| %>
+    <div class="bg-white rounded-lg shadow-sm border border-neutral-200 overflow-x-auto">
+      <table class="w-full text-sm" id="bulk-authors-table">
+        <thead class="bg-neutral-50 border-b border-neutral-200">
+          <tr>
+            <th class="px-3 py-3 text-left font-semibold text-neutral-700 w-8">#</th>
+            <th class="px-3 py-3 text-left font-semibold text-neutral-700 min-w-[250px]">Name *</th>
+            <th class="px-3 py-3 text-left font-semibold text-neutral-700 min-w-[200px]">Nationality</th>
+            <th class="px-3 py-3 text-left font-semibold text-neutral-700 min-w-[150px]">Gender</th>
+            <th class="px-3 py-3 text-left font-semibold text-neutral-700 w-8">...</th>
+          </tr>
+        </thead>
+        <tbody id="bulk-authors-tbody">
+          <% @author_count.times do |i| %>
+            <tr class="border-b border-neutral-100 hover:bg-neutral-50 author-row" data-row-index="<%= i %>">
+              <td class="px-3 py-3 text-neutral-500"><%= i + 1 %></td>
+              <td class="px-3 py-3">
+                <input type="text" name="authors[<%= i %>][name]" placeholder="Author name" class="w-full px-3 py-2 border border-neutral-300 rounded focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none text-sm" />
+              </td>
+              <td class="px-3 py-3">
+                <input type="text" name="authors[<%= i %>][nationality]" list="nationalities" placeholder="e.g. American" class="w-full px-3 py-2 border border-neutral-300 rounded focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none text-sm" />
+              </td>
+              <td class="px-3 py-3">
+                <select name="authors[<%= i %>][gender]" class="w-full px-3 py-2 border border-neutral-300 rounded focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none text-sm">
+                  <option value="">Select gender</option>
+                  <option value="male">Male</option>
+                  <option value="female">Female</option>
+                </select>
+              </td>
+              <td class="px-3 py-3 text-center">
+                <button type="button" class="remove-row text-red-600 hover:text-red-700 text-xs font-medium">❌</button>
+              </td>
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
+    </div>
+
+    <datalist id="nationalities">
+      <% ISO3166::Country.all.sort_by(&:nationality).each do |country| %>
+        <% if country.nationality.present? %>
+          <option value="<%= country.nationality %>">
+        <% end %>
+      <% end %>
+    </datalist>
+
+    <div class="flex items-center justify-between mt-6">
+      <button type="button" id="add-row" class="px-4 py-2 bg-neutral-100 text-neutral-700 font-medium rounded-lg hover:bg-neutral-200 transition text-sm">
+        + Add Row
+      </button>
+
+      <div class="flex gap-3">
+        <%= link_to "Cancel", authors_path, class: "px-6 py-2 bg-neutral-200 text-neutral-700 font-medium rounded-lg hover:bg-neutral-300 transition" %>
+        <%= form.submit "Create All Authors", class: "px-6 py-2 bg-gradient-to-r from-purple-500 to-purple-600 text-white font-medium rounded-lg hover:from-purple-600 hover:to-purple-700 transition" %>
+      </div>
+    </div>
+  <% end %>
+</div>
+
+<script>
+document.addEventListener('turbo:load', () => {
+  const addRowBtn = document.getElementById('add-row');
+  const tbody = document.getElementById('bulk-authors-tbody');
+
+  if (addRowBtn && tbody) {
+    addRowBtn.addEventListener('click', () => {
+      const rowCount = tbody.querySelectorAll('.author-row').length;
+      const newRow = document.createElement('tr');
+      newRow.className = 'border-b border-neutral-100 hover:bg-neutral-50 author-row';
+      newRow.setAttribute('data-row-index', rowCount);
+      newRow.innerHTML = `
+        <td class="px-3 py-3 text-neutral-500">${rowCount + 1}</td>
+        <td class="px-3 py-3">
+          <input type="text" name="authors[${rowCount}][name]" placeholder="Author name" class="w-full px-3 py-2 border border-neutral-300 rounded focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none text-sm" />
+        </td>
+        <td class="px-3 py-3">
+          <input type="text" name="authors[${rowCount}][nationality]" list="nationalities" placeholder="e.g. American" class="w-full px-3 py-2 border border-neutral-300 rounded focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none text-sm" />
+        </td>
+        <td class="px-3 py-3">
+          <select name="authors[${rowCount}][gender]" class="w-full px-3 py-2 border border-neutral-300 rounded focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none text-sm">
+            <option value="">Select gender</option>
+            <option value="male">Male</option>
+            <option value="female">Female</option>
+          </select>
+        </td>
+        <td class="px-3 py-3 text-center">
+          <button type="button" class="remove-row text-red-600 hover:text-red-700 text-xs font-medium">❌</button>
+        </td>
+      `;
+      tbody.appendChild(newRow);
+    });
+
+    // Delegate event for remove buttons
+    tbody.addEventListener('click', (e) => {
+      if (e.target.classList.contains('remove-row')) {
+        const row = e.target.closest('.author-row');
+        if (row) {
+          row.remove();
+          // Renumber remaining rows
+          const rows = tbody.querySelectorAll('.author-row');
+          rows.forEach((row, index) => {
+            row.querySelector('td:first-child').textContent = index + 1;
+          });
+        }
+      }
+    });
+  }
+});
+</script>
