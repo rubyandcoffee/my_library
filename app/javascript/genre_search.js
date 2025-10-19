@@ -1,5 +1,5 @@
 // Genre search and tag functionality
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('turbo:load', function() {
   const searchInput = document.getElementById('genre-search');
   const dropdown = document.getElementById('genre-dropdown');
   const selectedGenresContainer = document.getElementById('selected-genres');

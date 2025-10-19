@@ -7,3 +7,9 @@
 #   ["Action", "Comedy", "Drama", "Horror"].each do |genre_name|
 #     MovieGenre.find_or_create_by!(name: genre_name)
 #   end
+
+# Initialize user settings (singleton)
+UserSetting.current
+
+# Create a yearly reading goal for the current year
+YearlyReadingGoal.find_or_create_for_year(Date.today.year)

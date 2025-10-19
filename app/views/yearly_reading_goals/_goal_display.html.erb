@@ -1,0 +1,29 @@
+<div class="flex items-center gap-2">
+  <p class="text-3xl font-bold text-neutral-900"><%= yearly_goal.target_books %></p>
+  <button type="button"
+    class="text-neutral-400 hover:text-purple-600 transition text-sm"
+    onclick="document.getElementById('goal_form_<%= yearly_goal.id %>').style.display = 'block'; this.parentElement.style.display = 'none';">
+    ✏️
+  </button>
+</div>
+<% if yearly_goal.target_books == 50 %>
+  <p class="text-xs text-neutral-500 mt-1">Click to set your goal</p>
+<% end %>
+
+<!-- Inline edit form (hidden by default) -->
+<div id="goal_form_<%= yearly_goal.id %>" style="display: none;">
+  <%= form_with(model: yearly_goal, url: yearly_reading_goal_path(yearly_goal), method: :patch, local: false) do |f| %>
+    <div class="flex items-center gap-2">
+      <%= f.number_field :target_books,
+        class: "w-24 px-3 py-2 text-2xl font-bold border border-neutral-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500",
+        min: 0 %>
+      <%= f.submit "Save", class: "px-3 py-1 bg-purple-500 text-white text-sm rounded-lg hover:bg-purple-600 transition" %>
+      <button type="button"
+        class="px-3 py-1 bg-neutral-200 text-neutral-700 text-sm rounded-lg hover:bg-neutral-300 transition"
+        onclick="this.closest('div[id^=goal_form]').style.display = 'none'; this.closest('turbo-frame').querySelector('.flex.items-center.gap-2').style.display = 'flex';">
+        Cancel
+      </button>
+    </div>
+  <% end %>
+</div>
+

@@ -1,0 +1,44 @@
+<div class="space-y-1">
+  <div class="flex items-center justify-between">
+    <div>
+      <div class="text-xs text-neutral-600">Daily: <span class="font-semibold text-neutral-900"><%= user_setting.daily_reading_minutes %> min</span></div>
+      <div class="text-xs text-neutral-600">Speed: <span class="font-semibold text-neutral-900"><%= user_setting.reading_speed_wpm %> WPM</span></div>
+      <div class="text-xs text-neutral-500 mt-1">
+        Capacity: <%= ((user_setting.daily_reading_minutes * 30) / 60.0).round(1) %> hrs/mo
+      </div>
+    </div>
+    <button type="button"
+      class="text-neutral-400 hover:text-purple-600 transition text-sm self-start"
+      onclick="document.getElementById('settings_form').style.display = 'block'; document.getElementById('settings_display').style.display = 'none';">
+      ✏️
+    </button>
+  </div>
+</div>
+
+<!-- Inline edit form (hidden by default) -->
+<div id="settings_form" style="display: none;">
+  <%= form_with(model: user_setting, url: user_settings_path, method: :patch, local: false) do |f| %>
+    <div class="space-y-3">
+      <div>
+        <label class="text-xs text-neutral-600">Daily Reading Time (minutes)</label>
+        <%= f.number_field :daily_reading_minutes,
+          class: "w-full px-3 py-2 border border-neutral-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500",
+          min: 1 %>
+      </div>
+      <div>
+        <label class="text-xs text-neutral-600">Reading Speed (words per minute)</label>
+        <%= f.number_field :reading_speed_wpm,
+          class: "w-full px-3 py-2 border border-neutral-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500",
+          min: 1 %>
+      </div>
+      <div class="flex gap-2">
+        <%= f.submit "Save", class: "px-4 py-2 bg-purple-500 text-white text-sm rounded-lg hover:bg-purple-600 transition" %>
+        <button type="button"
+          class="px-4 py-2 bg-neutral-200 text-neutral-700 text-sm rounded-lg hover:bg-neutral-300 transition"
+          onclick="document.getElementById('settings_form').style.display = 'none'; document.getElementById('settings_display').style.display = 'block';">
+          Cancel
+        </button>
+      </div>
+    </div>
+  <% end %>
+</div>

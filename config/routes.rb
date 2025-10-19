@@ -18,6 +18,8 @@ Rails.application.routes.draw do
   end
   resources :series
   resources :genres
+  resources :yearly_reading_goals, only: [ :update ]
+  resource :user_settings, only: [ :update ]
 
   # Define your application routes per the DSL in https://guides.rubyonrails.org/routing.html
 
