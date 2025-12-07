@@ -1,72 +1,54 @@
-# syntax=docker/dockerfile:1
-# check=error=true
+# Dockerfile
+# Dev Dockerfile for a Rails 8 app using sqlite3
 
-# This Dockerfile is designed for production, not development. Use with Kamal or build'n'run by hand:
-# docker build -t my_library .
-# docker run -d -p 80:80 -e RAILS_MASTER_KEY=<value from config/master.key> --name my_library my_library
-
-# For a containerized dev environment, see Dev Containers: https://guides.rubyonrails.org/getting_started_with_devcontainer.html
-
-# Make sure RUBY_VERSION matches the Ruby version in .ruby-version
 ARG RUBY_VERSION=3.2.2
-FROM docker.io/library/ruby:$RUBY_VERSION-slim AS base
+FROM ruby:${RUBY_VERSION}-slim
 
-# Rails app lives here
+# OS packages: compiler + sqlite + Node + basic tools
+RUN apt-get update -qq && \
+    apt-get install --no-install-recommends -y \
+      build-essential \
+      libsqlite3-dev \
+      sqlite3 \
+      nodejs \
+      curl \
+      git \
+    && rm -rf /var/lib/apt/lists/* /var/cache/apt/archives
+
+# App directory
 WORKDIR /rails
 
-# Install base packages
-RUN apt-get update -qq && \
-    apt-get install --no-install-recommends -y curl libjemalloc2 libvips sqlite3 && \
-    rm -rf /var/lib/apt/lists /var/cache/apt/archives
-
-# Set production environment
-ENV RAILS_ENV="production" \
-    BUNDLE_DEPLOYMENT="1" \
+# Bundler / Rails environment
+ENV RAILS_ENV=development \
+    BUNDLE_WITHOUT="" \
     BUNDLE_PATH="/usr/local/bundle" \
-    BUNDLE_WITHOUT="development"
+    BUNDLE_BIN="/usr/local/bundle/bin" \
+    BUNDLE_JOBS=4 \
+    BUNDLE_RETRY=3 \
+    PATH="/usr/local/bundle/bin:${PATH}"
 
-# Throw-away build stage to reduce size of final image
-FROM base AS build
+# Optional: pin Bundler version to match your Gemfile.lock
+ARG BUNDLER_VERSION
+RUN if [ -n "$BUNDLER_VERSION" ]; then \
+      gem install bundler -v "$BUNDLER_VERSION" --no-document; \
+    else \
+      gem install bundler --no-document; \
+    fi
 
-# Install packages needed to build gems
-RUN apt-get update -qq && \
-    apt-get install --no-install-recommends -y build-essential git libyaml-dev pkg-config && \
-    rm -rf /var/lib/apt/lists /var/cache/apt/archives
-
-# Install application gems
+# Install gems (use Gemfile + Gemfile.lock for better caching)
 COPY Gemfile Gemfile.lock ./
-RUN bundle install && \
-    rm -rf ~/.bundle/ "${BUNDLE_PATH}"/ruby/*/cache "${BUNDLE_PATH}"/ruby/*/bundler/gems/*/.git && \
-    bundle exec bootsnap precompile --gemfile
+RUN bundle install
 
-# Copy application code
+# Copy the rest of the app
 COPY . .
 
-# Precompile bootsnap code for faster boot times
-RUN bundle exec bootsnap precompile app/ lib/
+# Ensure bin scripts are executable (bin/rails, bin/dev, etc.)
+RUN chmod +x bin/* || true
 
-# Precompiling assets for production without requiring secret RAILS_MASTER_KEY
-RUN SECRET_KEY_BASE_DUMMY=1 ./bin/rails assets:precompile
+EXPOSE 3000
 
+# If your app uses bin/dev (Rails 7/8 default):
+# CMD ["bash", "-lc", "bin/dev"]
 
-
-
-# Final stage for app image
-FROM base
-
-# Copy built artifacts: gems, application
-COPY --from=build "${BUNDLE_PATH}" "${BUNDLE_PATH}"
-COPY --from=build /rails /rails
-
-# Run and own only the runtime files as a non-root user for security
-RUN groupadd --system --gid 1000 rails && \
-    useradd rails --uid 1000 --gid 1000 --create-home --shell /bin/bash && \
-    chown -R rails:rails db log storage tmp
-USER 1000:1000
-
-# Entrypoint prepares the database.
-ENTRYPOINT ["/rails/bin/docker-entrypoint"]
-
-# Start server via Thruster by default, this can be overwritten at runtime
-EXPOSE 80
-CMD ["./bin/thrust", "./bin/rails", "server"]
+# If you *don’t* have bin/dev, use this instead:
+CMD ["bash", "-lc", "bundle exec rails server -b 0.0.0.0 -p 3000"]
