@@ -1,0 +1,27 @@
+version: "3.9"
+
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        # Match this to the Bundler version in your Gemfile.lock if needed
+        BUNDLER_VERSION: "2.5.10"
+    environment:
+      RAILS_ENV: development
+      # PORT is used by bin/dev in newer Rails apps
+      PORT: 3000
+    working_dir: /rails
+    volumes:
+      # Your app code (including db/development.sqlite3) lives on the host
+      - .:/rails:cached
+      # Cache gems between runs
+      - bundle:/usr/local/bundle
+    ports:
+      - "3000:3000"
+    stdin_open: true
+    tty: true
+
+volumes:
+  bundle:
